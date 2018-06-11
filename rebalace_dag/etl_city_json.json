@@ -1,0 +1,141 @@
+{
+  "processors":[
+    {
+      "name": "KafkaETLGetFile",
+      "class": "in.dream_lab.nifi.etl.processors.KafkaETLGetFile",
+      "uuid": "0",
+      "relationships": [
+        {"name": "success", "autoTerminate": false}
+      ],
+      "properties": [
+        {"group_name": "city_consumer_group"},
+        {"kafka ip address": "$KAFKA_URL"},
+        {"kafka port": "9092"},
+        {"topic": "city_input"},
+        {"Experiment Log File" : "/exp_logs/exp_0.log"}
+      ],
+      "isInput": true,
+      "sourceUuid": "1"
+    },
+    {
+      "name": "SenMLParser",
+      "class": "in.dream_lab.nifi.etl.processors.SenMLParser",
+      "uuid": "1",
+      "relationships": [
+        {"name": "success", "autoTerminate": false}
+      ],
+      "properties": [
+        {"Experiment Log File" : "/exp_logs/exp_1.log"}
+      ],
+      "isInput": true,
+      "sourceUuid": "2"
+    },
+    {
+      "name": "RBIFilter_Edgent",
+      "class": "in.dream_lab.nifi.etl.processors.RBIFilter_Edgent",
+      "uuid": "2",
+      "relationships": [
+        {"name": "success", "autoTerminate": false}
+      ],
+      "properties": [
+        {"Bloom Filter File Path": "/data/bloomfilter_sensor_id"},
+        {"Valid Range for Attributes": "temperature:-12.5:43.1,humidity:10.7:95.2,light:1345:26282,dust:186.61:5188.21,airquality_raw:17:363"},
+        {"Bloom use message field list" : ""},
+        {"Experiment Log File" : "/exp_logs/exp_2.log"},
+        {"Interpolation message field list" : "temperature"},
+        {"Interpolation Window Size" : 2}
+      ],
+      "isInput": true,
+      "sourceUuid": "3"
+    },
+    {
+      "name": "JoinETL",
+      "class": "in.dream_lab.nifi.etl.processors.JoinETL",
+      "uuid": "3",
+      "relationships": [
+        {"name": "success", "autoTerminate": false}
+      ],
+      "properties": [
+        {"Join Schema File Path": "/data/sys-schema_without_annotationfields.txt"},
+        {"Meta Fields" : "timestamp@source@longitude@latitude"},
+        {"Meta Field Delimiter" : "@"},
+        {"Experiment Log File" : "/exp_logs/exp_3.log"}
+      ],
+      "isInput": true,
+      "sourceUuid": "4"
+    },
+    {
+      "name": "AnnotateETL",
+      "class": "in.dream_lab.nifi.etl.processors.AnnotateETL",
+      "uuid": "4",
+      "relationships": [
+        {"name": "success", "autoTerminate": false}
+      ],
+      "properties": [
+        {"Metadata File Path": "/data/city-metadata.txt"},
+        {"Experiment Log File" : "/exp_logs/exp_4.log"}
+      ],
+      "isInput": true,
+      "sourceUuid": "5"
+    },
+    {
+      "name": "CSVSenMLParser",
+      "class": "in.dream_lab.nifi.etl.processors.CSVSenMLParser",
+      "uuid": "5",
+      "relationships": [
+        {"name": "success", "autoTerminate": false}
+      ],
+      "properties": [
+        {"Annotation Schema File Path": "/data/sys-schema_without_annotationfields.txt"},
+        {"Experiment Log File" : "/exp_logs/exp_5.log"}
+      ],
+      "isInput": true,
+      "sourceUuid": "6"
+    },
+    {
+      "name": "KafkaProducerProcessor",
+      "class": "in.dream_lab.nifi.etl.processors.KafkaProducerProcessor",
+      "uuid": "6",
+      "relationships": [
+        {"name": "success", "autoTerminate": true},
+        {"name": "failure", "autoTerminate": true}
+      ],
+      "properties": [
+        {"kafka ip address": "$KAFKA_URL"},
+        {"kafka port": "9092"},
+        {"topic": "city_output"},        
+        {"Experiment Log File" : "/exp_logs/exp_6.log"}
+      ],
+      "isInput": true,
+      "sourceUuid": "7"
+    },
+    {
+      "name": "InsertToMySQL",
+      "class": "in.dream_lab.nifi.etl.processors.InsertToMySQL",
+      "uuid": "7",
+      "relationships": [
+        {"name": "success", "autoTerminate": true}
+      ],
+      "properties": [
+        {"SQL Connection String": "jdbc:mysql://$HOST:$PORT/city"},
+        {"TABLE NAME": "city_etl"},
+        {"USER_NAME": "etl"},
+        {"PASSWORD": "etl"},
+        {"Experiment Log File" : "/exp_logs/exp_7.log"}
+      ],
+      "isInput": true,
+      "sourceUuid": "8"
+   }
+  ],
+  "wiring": [
+    {"sourceProcessor": "0", "destinationProcessor": "1", "selectedRelationships": ["success"]},
+    {"sourceProcessor": "1", "destinationProcessor": "2", "selectedRelationships": ["success"]},
+    {"sourceProcessor": "2", "destinationProcessor": "3", "selectedRelationships": ["success"]},
+    {"sourceProcessor": "3", "destinationProcessor": "4", "selectedRelationships": ["success"]},
+    {"sourceProcessor": "4", "destinationProcessor": "5", "selectedRelationships": ["success"]},
+    {"sourceProcessor": "5", "destinationProcessor": "6", "selectedRelationships": ["success"]},
+    {"sourceProcessor": "4", "destinationProcessor": "7", "selectedRelationships": ["success"]}
+  ],
+  "inputstreams": ["blah"],
+  "QOS": 1
+}

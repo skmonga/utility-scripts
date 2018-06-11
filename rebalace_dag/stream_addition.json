@@ -1,0 +1,22 @@
+{
+            "item-metadata": [
+                {
+                    "val": "Input Stream",
+                    "rel": "urn:X-hypercat:rels:hasDescription:en"
+                },
+                {
+                    "val": "Some processor",
+                    "rel": "Type"
+                },
+                {
+                    "val": "8",
+                    "rel": "Input_Stream_UUID"
+                },
+                {
+                    "val": "2",
+                    "rel": "DeviceUUID"
+                }
+            ],
+            "href": "/device/input_stream/2/8"
+	
+}
