@@ -210,14 +210,14 @@ with open(message_tracker,"r") as entry:
 		if 'parking_lot' not in img_name:
 			if idx%2 == 0:
 				kafka_key = producer_entry_list[idx//2]
-				if running_count_entry == 0:
+				if idx%window_size == 0:
 					start_entry = kafka_key
 				last_entry = kafka_key
 				running_count_entry += 1
 				output_msg_entry_dict[kafka_key] = 1
 			else:
 				kafka_key = producer_exit_list[idx//2]
-				if running_count_exit == 0:
+				if idx%window_size == 1:
 					start_exit = kafka_key
 				last_exit = kafka_key
 				running_count_exit += 1
@@ -225,9 +225,15 @@ with open(message_tracker,"r") as entry:
 		else:
 			if idx%2 == 0:
 				kafka_key = producer_entry_list[idx//2]
+				if idx%window_size == 0:
+					start_entry = kafka_key
+				last_entry = kafka_key
 				output_msg_entry_dict[kafka_key] = 1
 			else:
 				kafka_key = producer_exit_list[idx//2]
+				if idx%window_size == 1:
+					start_exit = kafka_key
+				last_exit = kafka_key
 				output_msg_exit_dict[kafka_key] = 1	
 		idx += 1
 		if idx%window_size == 0:
